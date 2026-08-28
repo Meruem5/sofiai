@@ -130,19 +130,40 @@ After the first successful Actions run:
 1. **Settings → Pages → Build and deployment → Source**: set to **GitHub Actions**
    (not "Deploy from a branch").
 2. **Settings → Pages → Custom domain**: enter the domain and save.
-   Do **not** add a `public/CNAME` file — when publishing via a GitHub Actions workflow, GitHub
-   ignores any CNAME file in the repo. The domain is configured only through this field.
-3. **DNS**, at the domain registrar:
-   - *Apex / root domain* (`example.com`) — four A records:
-     `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
-     Optional AAAA records for IPv6: `2606:50c0:8000::153`, `2606:50c0:8001::153`,
-     `2606:50c0:8002::153`, `2606:50c0:8003::153`. If the provider offers ALIAS/ANAME
-     instead, point it at `<github-username>.github.io`.
-   - *Subdomain* (`sofia.example.com`, `www.example.com`) — one CNAME record pointing at
-     `<github-username>.github.io`.
-4. Propagation can take up to 24 hours. Once the domain resolves, return to
-   **Settings → Pages** and tick **Enforce HTTPS**. That checkbox only becomes available
-   after GitHub verifies the domain, so it may need a retry.
+   Do **not** add a `public/CNAME` file — when publishing via a GitHub Actions workflow,
+   GitHub ignores any CNAME file in the repo. The domain is configured only through this
+   field.
+
+   There *is* a `CNAME` file in the repo root. GitHub committed it automatically when the
+   custom domain was first set, while Pages was still on "Deploy from a branch". It is
+   inert now that the source is GitHub Actions, and is kept only so the domain survives if
+   anyone ever switches the source back.
+3. **DNS**, at the domain registrar. This is already done for `sofiai.hu` — recorded
+   here so it can be rebuilt or checked. `sofiai.hu` is an apex domain, so it uses A
+   records rather than a CNAME:
+
+   | Type | Name | Value |
+   | --- | --- | --- |
+   | A | `@` | `185.199.108.153` |
+   | A | `@` | `185.199.109.153` |
+   | A | `@` | `185.199.110.153` |
+   | A | `@` | `185.199.111.153` |
+   | AAAA | `@` | `2606:50c0:8000::153` |
+   | AAAA | `@` | `2606:50c0:8001::153` |
+   | AAAA | `@` | `2606:50c0:8002::153` |
+   | AAAA | `@` | `2606:50c0:8003::153` |
+   | CNAME | `www` | `meruem5.github.io.` |
+
+   The AAAA records are optional (IPv6); the `www` CNAME is what makes
+   `www.sofiai.hu` work alongside the apex. Verify with:
+
+   ```bash
+   dig +short sofiai.hu A && dig +short www.sofiai.hu CNAME
+   ```
+
+4. **Enforce HTTPS** in Settings → Pages. Already enabled — the certificate covers both
+   `sofiai.hu` and `www.sofiai.hu`. This checkbox only becomes available after GitHub
+   verifies the domain, so on a fresh setup it may need a retry.
 
 ### Action versions
 
